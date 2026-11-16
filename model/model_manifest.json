@@ -1,0 +1,143 @@
+{
+  "model_version": "1.0.0",
+  "trained_at": "2026-11-16T14:19:34.576384+00:00",
+  "dataset": "AI4I 2020 Predictive Maintenance Dataset",
+  "dataset_source": "UCI Machine Learning Repository",
+  "dataset_sha256": "dc6630cd9b1f0f853922fad78a1b6436570d3f1ec863f1dd5c4340ac56bc8a8e",
+  "record_count": 10000,
+  "random_seed": 42,
+  "split": {
+    "train": 7000,
+    "validation": 1500,
+    "test": 1500,
+    "stratified": true
+  },
+  "feature_schema": [
+    {
+      "name": "Type",
+      "type": "categorical"
+    },
+    {
+      "name": "Air temperature [K]",
+      "type": "number"
+    },
+    {
+      "name": "Process temperature [K]",
+      "type": "number"
+    },
+    {
+      "name": "Rotational speed [rpm]",
+      "type": "number"
+    },
+    {
+      "name": "Torque [Nm]",
+      "type": "number"
+    },
+    {
+      "name": "Tool wear [min]",
+      "type": "number"
+    }
+  ],
+  "target": "Machine failure",
+  "excluded_columns": [
+    "UDI",
+    "UID",
+    "Product ID",
+    "TWF",
+    "HDF",
+    "PWF",
+    "OSF",
+    "RNF"
+  ],
+  "threshold": 0.36,
+  "class_distribution": {
+    "0": 9661,
+    "1": 339
+  },
+  "random_forest": {
+    "bootstrap": true,
+    "ccp_alpha": 0.0,
+    "class_weight": "balanced_subsample",
+    "criterion": "gini",
+    "max_depth": null,
+    "max_features": "sqrt",
+    "max_leaf_nodes": null,
+    "max_samples": null,
+    "min_impurity_decrease": 0.0,
+    "min_samples_leaf": 2,
+    "min_samples_split": 2,
+    "min_weight_fraction_leaf": 0.0,
+    "monotonic_cst": null,
+    "n_estimators": 500,
+    "n_jobs": 1,
+    "oob_score": false,
+    "random_state": 42,
+    "verbose": 0,
+    "warm_start": false
+  },
+  "metrics": {
+    "accuracy": 0.978,
+    "precision": 0.6607142857142857,
+    "recall": 0.7254901960784313,
+    "f1": 0.6915887850467289,
+    "roc_auc": 0.9767791174440791,
+    "confusion_matrix": [
+      [
+        1430,
+        19
+      ],
+      [
+        14,
+        37
+      ]
+    ],
+    "false_negatives": 14,
+    "false_positives": 19
+  },
+  "baseline": {
+    "strategy": "always_normal",
+    "accuracy": 0.966,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+  },
+  "feature_importance": [
+    {
+      "feature": "Torque [Nm]",
+      "importance": 0.30878694095036757
+    },
+    {
+      "feature": "Rotational speed [rpm]",
+      "importance": 0.2953549972123799
+    },
+    {
+      "feature": "Tool wear [min]",
+      "importance": 0.1970361396510259
+    },
+    {
+      "feature": "Air temperature [K]",
+      "importance": 0.10366148338760683
+    },
+    {
+      "feature": "Process temperature [K]",
+      "importance": 0.07307307988958149
+    },
+    {
+      "feature": "Type_L",
+      "importance": 0.010539934698134463
+    },
+    {
+      "feature": "Type_M",
+      "importance": 0.007227985855904266
+    },
+    {
+      "feature": "Type_H",
+      "importance": 0.004319438354999636
+    }
+  ],
+  "library_versions": {
+    "scikit_learn": "1.8.0",
+    "pandas": "3.0.1",
+    "joblib": "1.5.3"
+  }
+}
