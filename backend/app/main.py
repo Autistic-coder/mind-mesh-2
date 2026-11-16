@@ -53,7 +53,11 @@ app.add_middleware(
 
 
 def set_session_cookies(response: Response, raw: str, csrf: str) -> None:
-    common = {"secure": settings.secure_cookies, "samesite": "lax", "path": "/"}
+    common = {
+        "secure": settings.secure_cookies,
+        "samesite": "none" if settings.secure_cookies else "lax",
+        "path": "/",
+    }
     response.set_cookie("mindmesh_session", raw, httponly=True, max_age=604800, **common)
     response.set_cookie("mindmesh_csrf", csrf, httponly=False, max_age=604800, **common)
 
@@ -111,6 +115,14 @@ def login(
 @app.get("/api/auth/me", response_model=UserResponse)
 def me(user: User = Depends(current_user)):
     return user
+
+
+@app.get("/api/auth/csrf")
+def csrf_token(request: Request, db: Session = Depends(get_db)):
+    record = session_from_request(request, db)
+    if not record:
+        raise HTTPException(401, "Authentication required")
+    return {"csrf_token": record.csrf_token}
 
 
 @app.post("/api/auth/logout", status_code=204, dependencies=[Depends(require_csrf)])

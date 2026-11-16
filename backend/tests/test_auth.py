@@ -1,4 +1,8 @@
+from dataclasses import replace
+
 from fastapi.testclient import TestClient
+
+from backend.app import main
 
 
 def test_registration_restoration_logout(client: TestClient):
@@ -11,9 +15,11 @@ def test_registration_restoration_logout(client: TestClient):
     assert registered.status_code == 201
     assert "mindmesh_session" in client.cookies
     assert client.get("/api/auth/me").json()["email"] == payload["email"]
+    assert client.get("/api/auth/csrf").json()["csrf_token"] == client.cookies["mindmesh_csrf"]
     csrf = client.cookies["mindmesh_csrf"]
     assert client.post("/api/auth/logout", headers={"X-CSRF-Token": csrf}).status_code == 204
     assert client.get("/api/auth/me").status_code == 401
+    assert client.get("/api/auth/csrf").status_code == 401
 
 
 def test_login_uses_generic_error(client: TestClient):
@@ -59,3 +65,20 @@ def test_login_rate_limit(client: TestClient):
     payload = {"email": "nobody@example.com", "password": "wrong"}
     statuses = [client.post("/api/auth/login", json=payload).status_code for _ in range(9)]
     assert statuses[-1] == 429
+
+
+def test_production_session_cookie_supports_cross_site_frontend(client: TestClient, monkeypatch):
+    monkeypatch.setattr(main, "settings", replace(main.settings, secure_cookies=True))
+    response = client.post(
+        "/api/auth/register",
+        json={
+            "email": "cookie@example.com",
+            "display_name": "Cookie Test",
+            "password": "long-password-123",
+        },
+    )
+    cookies = response.headers.get_list("set-cookie")
+    session = next(value for value in cookies if value.startswith("mindmesh_session="))
+    assert "HttpOnly" in session
+    assert "SameSite=none" in session
+    assert "Secure" in session

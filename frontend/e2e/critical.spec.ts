@@ -7,6 +7,7 @@ async function mockApi(page: Page) {
     const request = route.request(); const path = new URL(request.url()).pathname;
     const fulfill = (json: unknown, status = 200) => route.fulfill({ status, contentType: "application/json", body: status === 204 ? "" : JSON.stringify(json) });
     if (path === "/api/auth/me") return fulfill(authenticated ? user : { detail: "Authentication required" }, authenticated ? 200 : 401);
+    if (path === "/api/auth/csrf") return fulfill({ csrf_token: "test" });
     if (path === "/api/auth/register" || path === "/api/auth/login") { authenticated = true; return fulfill(user, path.endsWith("register") ? 201 : 200); }
     if (path === "/api/auth/logout") { authenticated = false; predictions = []; return fulfill({}, 204); }
     if (path === "/api/overview") return fulfill({ total: predictions.length, normal: predictions.length, flagged: 0, model_version: "1.0.0", recent: predictions });
