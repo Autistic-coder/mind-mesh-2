@@ -1,0 +1,29 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root { color: #171815; background: #f6f2e8; font-family: "Manrope", system-ui, sans-serif; }
+  * { border-color: rgba(23, 24, 21, .2); }
+  body { margin: 0; min-width: 320px; min-height: 100vh; }
+  h1, h2, h3 { font-family: "Cormorant Garamond", Georgia, serif; letter-spacing: -.025em; }
+  button, a, input, select, textarea { outline: none; }
+  :focus-visible { box-shadow: 0 0 0 3px #f6f2e8, 0 0 0 5px #171815; }
+  ::selection { background: #c7f432; color: #171815; }
+}
+
+@layer components {
+  .panel { @apply border border-ink/20 bg-white/40; }
+  .button { @apply inline-flex min-h-11 items-center justify-center gap-2 border border-ink bg-ink px-5 py-2.5 text-sm font-bold text-ivory transition duration-200 hover:-translate-y-0.5 hover:bg-acid hover:text-ink disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0; }
+  .button-ghost { @apply button bg-transparent text-ink hover:bg-ink hover:text-ivory; }
+  .field { @apply w-full border border-ink/30 bg-ivory px-3 py-2.5 text-sm transition focus:border-ink; }
+  .eyebrow { @apply text-xs font-bold uppercase tracking-[.2em] text-ink/60; }
+  .page-title { @apply mt-2 font-display text-5xl font-semibold leading-none md:text-6xl; }
+  .metric { @apply panel p-5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
