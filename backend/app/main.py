@@ -5,6 +5,7 @@ import io
 import json
 from contextlib import asynccontextmanager
 
+import httpx
 from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -368,12 +369,46 @@ def ask(
         user_id=user.id, role="user", content=payload.message, shared_prediction=shared
     )
     db.add(user_message)
-    if settings.openai_api_key:
-        reply = "AI assistance is configured, but this minimal server build requires an outbound provider adapter. Review the model report and qualified maintenance guidance meanwhile."
-        mode = "configured"
-    else:
+    if not settings.openai_api_key:
         reply = "Static help: MindMesh estimates failure risk from six operating readings. A flagged result should trigger qualified inspection; it does not prove a fault or replace maintenance procedures."
         mode = "static"
+    else:
+        context = (
+            f"\nThe user explicitly shared this prediction summary: {json.dumps(shared)}"
+            if shared
+            else ""
+        )
+        try:
+            with httpx.Client(timeout=httpx.Timeout(15.0, connect=5.0)) as client:
+                provider = client.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {settings.openai_api_key}"},
+                    json={
+                        "model": settings.openai_model,
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": (
+                                    "You are MindMesh, a concise predictive-maintenance explainer. "
+                                    "Explain inputs, metrics, predictions, and terminology. Never claim "
+                                    "to retrain the model, diagnose a fault, or perform maintenance. "
+                                    "Remind users that model output supports, but never replaces, inspection."
+                                ),
+                            },
+                            {"role": "user", "content": payload.message + context},
+                        ],
+                        "max_tokens": 500,
+                    },
+                )
+                provider.raise_for_status()
+                reply = provider.json()["choices"][0]["message"]["content"].strip()
+                if not reply:
+                    raise ValueError("Empty assistant response")
+            mode = "ai"
+        except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
+            raise HTTPException(
+                502, "Assistant is temporarily unavailable; static model guidance remains available"
+            ) from exc
     db.add(Conversation(user_id=user.id, role="assistant", content=reply))
     db.commit()
     return {"reply": reply, "mode": mode}
